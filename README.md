@@ -50,3 +50,21 @@ Configuration may also be provided via environment variables:
 - `MSTREAM_API_TOKEN`: bearer token for API authentication.
 - `MSTREAM_API_TIMEOUT`, `MSTREAM_API_MAX_RETRIES`, `MSTREAM_API_BACKOFF_FACTOR`: HTTP client tuning.
 - `MSTREAM_LOG_LEVEL`: logging verbosity for the server and transport.
+
+## VS Code Configuration
+
+Add the following to your VS Code `settings.json` to connect to the mstream MCP server:
+
+```json
+{
+  "mcp.servers": {
+    "mstream": {
+      "type": "http",
+      "url": "http://localhost:8788/mcp",
+      "transport": {
+        "type": "http"
+      }
+    }
+  }
+}
+```
