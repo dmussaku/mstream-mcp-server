@@ -61,7 +61,10 @@ create_service({
 ## Setup
 
 1. Clone the repository and create/activate your virtual environment.
-2. Install the package along with development dependencies:
+   ```bash
+   python -m venv .venv
+   ```
+3. Install the package along with development dependencies:
    ```bash
    pip install -e .[dev]
    ```
