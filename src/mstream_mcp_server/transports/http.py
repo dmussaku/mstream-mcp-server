@@ -15,9 +15,7 @@ from ..server import TransportAdapter
 class HTTPTransportAdapter(TransportAdapter):
     """HTTP adapter for hosting the MCP server via uvicorn."""
 
-    def __init__(
-        self, host: str, port: int, *, logger: logging.Logger | None = None
-    ) -> None:
+    def __init__(self, host: str, port: int, *, logger: logging.Logger | None = None) -> None:
         self.host = host
         self.port = port
         self.logger = logger or logging.getLogger(__name__)
@@ -37,25 +35,17 @@ class HTTPTransportAdapter(TransportAdapter):
 
 def _parse_args() -> argparse.Namespace:
     """Parse command line arguments for HTTP transport."""
-    parser = argparse.ArgumentParser(
-        description="Run the mstream MCP server over HTTP transport."
-    )
+    parser = argparse.ArgumentParser(description="Run the mstream MCP server over HTTP transport.")
     parser.add_argument(
         "--host",
         default=os.getenv("MSTREAM_SERVER_HOST", "0.0.0.0"),
-        help=(
-            "Host for the MCP HTTP server "
-            "(default: %(default)s or MSTREAM_SERVER_HOST)."
-        ),
+        help=("Host for the MCP HTTP server " "(default: %(default)s or MSTREAM_SERVER_HOST)."),
     )
     parser.add_argument(
         "--port",
         type=int,
         default=int(os.getenv("MSTREAM_SERVER_PORT", "8000")),
-        help=(
-            "Port for the MCP HTTP server "
-            "(default: %(default)s or MSTREAM_SERVER_PORT)."
-        ),
+        help=("Port for the MCP HTTP server " "(default: %(default)s or MSTREAM_SERVER_PORT)."),
     )
     parser.add_argument(
         "--api-base-url",

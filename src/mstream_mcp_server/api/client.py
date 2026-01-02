@@ -5,7 +5,7 @@ from collections.abc import Mapping, MutableMapping
 from typing import Any
 
 import httpx
-from httpx import BaseTransport
+from httpx import AsyncBaseTransport
 
 from .models import (
     BatchConfig,
@@ -48,7 +48,7 @@ class AsyncMStreamClient:
         timeout: float | httpx.Timeout | None = 10.0,
         max_retries: int = 3,
         backoff_factor: float = 0.5,
-        transport: BaseTransport | None = None,
+        transport: AsyncBaseTransport | None = None,
     ) -> None:
         base = base_url.rstrip("/")
         self.base_url = f"{base}:{port}" if port is not None else base
@@ -122,11 +122,7 @@ class AsyncMStreamClient:
                 if response.is_success:
                     return response
 
-                if (
-                    method in IDEMPOTENT_METHODS
-                    and response.status_code >= 500
-                    and attempt < attempts - 1
-                ):
+                if method in IDEMPOTENT_METHODS and response.status_code >= 500 and attempt < attempts - 1:
                     await self._sleep(attempt)
                     continue
 
@@ -152,9 +148,7 @@ class AsyncMStreamClient:
             details = response.json()
             error = ErrorResponse.from_response(response.status_code, details)
             message = error.message or message
-            return APIError(
-                message, status_code=response.status_code, details=error.details
-            )
+            return APIError(message, status_code=response.status_code, details=error.details)
         except Exception:
             # Fall back to plain text body when JSON parsing fails.
             text_body = response.text

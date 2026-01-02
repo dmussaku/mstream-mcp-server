@@ -22,9 +22,7 @@ class SchemaField:
             required=bool(data.get("required", False)),
             description=data.get("description"),
             metadata={
-                key: value
-                for key, value in data.items()
-                if key not in {"name", "type", "required", "description"}
+                key: value for key, value in data.items() if key not in {"name", "type", "required", "description"}
             },
         )
 
@@ -52,17 +50,11 @@ class SchemaDefinition:
     def from_dict(cls, data: dict[str, Any]) -> SchemaDefinition:
         return cls(
             name=data.get("name", ""),
-            fields=[
-                SchemaField.from_dict(item)
-                for item in data.get("fields", [])
-                if isinstance(item, dict)
-            ],
+            fields=[SchemaField.from_dict(item) for item in data.get("fields", []) if isinstance(item, dict)],
             version=data.get("version"),
             description=data.get("description"),
             metadata={
-                key: value
-                for key, value in data.items()
-                if key not in {"name", "fields", "version", "description"}
+                key: value for key, value in data.items() if key not in {"name", "fields", "version", "description"}
             },
         )
 
@@ -134,9 +126,7 @@ class Job:
             status=data.get("status", ""),
             name=data.get("name"),
             input_schema=(
-                SchemaDefinition.from_dict(data["input_schema"])
-                if isinstance(data.get("input_schema"), dict)
-                else None
+                SchemaDefinition.from_dict(data["input_schema"]) if isinstance(data.get("input_schema"), dict) else None
             ),
             output_schema=(
                 SchemaDefinition.from_dict(data["output_schema"])
@@ -144,9 +134,7 @@ class Job:
                 else None
             ),
             batch_config=(
-                BatchConfig.from_dict(data["batch_config"])
-                if isinstance(data.get("batch_config"), dict)
-                else None
+                BatchConfig.from_dict(data["batch_config"]) if isinstance(data.get("batch_config"), dict) else None
             ),
             metadata={
                 key: value
@@ -220,15 +208,9 @@ class Service:
             name=data.get("name", ""),
             endpoint=data.get("endpoint", ""),
             status=data.get("status"),
-            schemas=[
-                SchemaDefinition.from_dict(item)
-                for item in data.get("schemas", [])
-                if isinstance(item, dict)
-            ],
+            schemas=[SchemaDefinition.from_dict(item) for item in data.get("schemas", []) if isinstance(item, dict)],
             metadata={
-                key: value
-                for key, value in data.items()
-                if key not in {"id", "name", "endpoint", "status", "schemas"}
+                key: value for key, value in data.items() if key not in {"id", "name", "endpoint", "status", "schemas"}
             },
         )
 
