@@ -1,10 +1,10 @@
 # mstream-mcp-server
 
-A Model Context Protocol (MCP) server that exposes streaming media functionality for clients. This repository provides the scaffolding for developing and running the server with modern Python tooling.
+An MCP server for https://github.com/makarski/mstream
 
 ## Prerequisites
 
-- Python 3.10 or later
+- Python 3.11 or later
 - Recommended: a virtual environment (``python -m venv .venv``)
 
 ## Setup
@@ -13,6 +13,10 @@ A Model Context Protocol (MCP) server that exposes streaming media functionality
 2. Install the package along with development dependencies:
    ```bash
    pip install -e .[dev]
+   ```
+
+   ```zsh
+   pip install -e ".[dev]"
    ```
 
 ## Development
