@@ -1,14 +1,15 @@
+"""HTTP transport adapter for the MCP server."""
+
 from __future__ import annotations
 
 import argparse
-import asyncio
 import logging
 import os
 
 import uvicorn
 from mcp.server.fastmcp import FastMCP
 
-from .server import ServerConfig, TransportAdapter, create_mcp_server, setup_logging
+from ..server import TransportAdapter
 
 
 class HTTPTransportAdapter(TransportAdapter):
@@ -35,6 +36,7 @@ class HTTPTransportAdapter(TransportAdapter):
 
 
 def _parse_args() -> argparse.Namespace:
+    """Parse command line arguments for HTTP transport."""
     parser = argparse.ArgumentParser(
         description="Run the mstream MCP server over HTTP transport."
     )
@@ -97,26 +99,4 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
-    args = _parse_args()
-    logger = setup_logging(args.log_level)
-
-    server_config = ServerConfig(
-        api_base_url=args.api_base_url,
-        api_port=args.api_port,
-        api_auth_token=args.api_token,
-        api_timeout=args.api_timeout,
-        api_max_retries=args.api_max_retries,
-        api_backoff_factor=args.api_backoff_factor,
-    )
-
-    mcp_server = create_mcp_server(server_config, logger=logger)
-    adapter = HTTPTransportAdapter(args.host, args.port, logger=logger)
-    asyncio.run(adapter.serve(mcp_server))
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()
-
-
-__all__ = ["HTTPTransportAdapter", "main"]
+__all__ = ["HTTPTransportAdapter", "_parse_args"]

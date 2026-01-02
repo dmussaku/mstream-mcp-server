@@ -12,7 +12,8 @@ from .api import (
     Service,
     ServiceCreateRequest,
 )
-from .server import ServerConfig, TransportAdapter, create_mcp_server, setup_logging
+from .config import ServerConfig
+from .server import TransportAdapter, create_mcp_server, setup_logging
 
 __all__ = [
     "APIError",

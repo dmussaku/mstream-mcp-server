@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -15,19 +14,7 @@ from .api.models import (
     Service,
     ServiceCreateRequest,
 )
-
-
-@dataclass
-class ServerConfig:
-    """Configuration for wiring the MCP layer to the mstream API."""
-
-    api_base_url: str = "http://localhost"
-    api_port: int | None = None
-    api_auth_token: str | None = None
-    api_timeout: float = 10.0
-    api_max_retries: int = 3
-    api_backoff_factor: float = 0.5
-    server_name: str = "mstream-mcp-server"
+from .config import ServerConfig
 
 
 class TransportAdapter:
@@ -211,7 +198,7 @@ def _parse_job_create_request(payload: dict[str, Any]) -> JobCreateRequest:
     metadata = _parse_metadata(payload.get("metadata"))
 
     return JobCreateRequest(
-        name=name,
+        name=str(name),
         input_schema=input_schema,
         output_schema=output_schema,
         batch_config=batch_config,
@@ -242,7 +229,7 @@ def _parse_service_create_request(payload: dict[str, Any]) -> ServiceCreateReque
 
     metadata = _parse_metadata(payload.get("metadata"))
     return ServiceCreateRequest(
-        name=name, endpoint=endpoint, schemas=schemas, metadata=metadata
+        name=str(name), endpoint=str(endpoint), schemas=schemas, metadata=metadata
     )
 
 
@@ -314,4 +301,4 @@ def _error_response(
     return payload
 
 
-__all__ = ["ServerConfig", "TransportAdapter", "create_mcp_server", "setup_logging"]
+__all__ = ["TransportAdapter", "create_mcp_server", "setup_logging"]

@@ -33,8 +33,7 @@ A Model Context Protocol (MCP) server that exposes streaming media functionality
 
 ## Running the server
 
-The HTTP transport entrypoint lives under `src/mstream_mcp_server/http_server.py` and is exposed
-via `python -m mstream_mcp_server`. Example:
+The HTTP transport entrypoint is accessible via `python -m mstream_mcp_server`. Example:
 
 ```bash
 python -m mstream_mcp_server --host 0.0.0.0 --port 8000 --api-base-url http://localhost --api-port 8700

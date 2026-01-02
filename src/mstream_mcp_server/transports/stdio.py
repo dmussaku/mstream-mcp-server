@@ -1,10 +1,12 @@
+"""STDIO transport adapter for the MCP server."""
+
 from __future__ import annotations
 
 import logging
 
 from mcp.server.fastmcp import FastMCP
 
-from .server import TransportAdapter
+from ..server import TransportAdapter
 
 
 class STDIOTransportAdapter(TransportAdapter):
