@@ -41,6 +41,8 @@ def create_mcp_server(
     client = _build_client(config)
 
     mcp_server = FastMCP(config.server_name)
+    # Expose the underlying client for lifecycle management and testing.
+    mcp_server._mstream_client = client  # type: ignore[attr-defined]
 
     @mcp_server.tool()
     async def list_jobs() -> dict[str, Any]:
@@ -159,6 +161,8 @@ def _register_lifecycle_handlers(
     # Get the streamable HTTP app to set state and register lifecycle handlers
     app = server.streamable_http_app()
     app.state.mstream_client = client
+    # Surface the app so callers can re-use it without re-instantiation (primarily for tests).
+    server._streamable_http_app = app  # type: ignore[attr-defined]
     name = server_name or getattr(server, "name", "mstream-mcp-server")
 
     @app.on_event("startup")
@@ -179,6 +183,7 @@ def _build_client(config: ServerConfig) -> AsyncMStreamClient:
         timeout=config.api_timeout,
         max_retries=config.api_max_retries,
         backoff_factor=config.api_backoff_factor,
+        transport=config.transport,
     )
 
 
