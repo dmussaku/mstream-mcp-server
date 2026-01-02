@@ -169,14 +169,16 @@ def _register_lifecycle_handlers(
     logger: logging.Logger,
     server_name: str,
 ) -> None:
-    server.app.state.mstream_client = client
+    # Get the streamable HTTP app to set state and register lifecycle handlers
+    app = server.streamable_http_app()
+    app.state.mstream_client = client
     name = server_name or getattr(server, "name", "mstream-mcp-server")
 
-    @server.app.on_event("startup")
+    @app.on_event("startup")
     async def _on_startup() -> None:
         logger.info("Starting %s with API base %s", name, client.base_url)
 
-    @server.app.on_event("shutdown")
+    @app.on_event("shutdown")
     async def _on_shutdown() -> None:
         logger.info("Shutting down %s", name)
         await client.aclose()

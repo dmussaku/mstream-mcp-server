@@ -23,7 +23,7 @@ class HTTPTransportAdapter(TransportAdapter):
 
     async def serve(self, mcp_server: FastMCP) -> None:
         config = uvicorn.Config(
-            app=mcp_server.app,
+            app=mcp_server.streamable_http_app(),
             host=self.host,
             port=self.port,
             log_config=None,
