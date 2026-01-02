@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "mstream-mcp-server"
 version = "0.1.0"
-description = "Model Context Protocol server for streaming media operations."
+description = "Model Context Protocol server for mstream"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
