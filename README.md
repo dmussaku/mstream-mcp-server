@@ -33,10 +33,17 @@ A Model Context Protocol (MCP) server that exposes streaming media functionality
 
 ## Running the server
 
-The MCP server implementation should live under `src/mstream_mcp_server/`. Add your server entrypoint there, then execute it (for example) with:
+The HTTP transport entrypoint lives under `src/mstream_mcp_server/http_server.py` and is exposed
+via `python -m mstream_mcp_server`. Example:
 
 ```bash
-python -m mstream_mcp_server
+python -m mstream_mcp_server --host 0.0.0.0 --port 8000 --api-base-url http://localhost --api-port 8700
 ```
 
-Adjust the module path and command based on your server implementation.
+Configuration may also be provided via environment variables:
+
+- `MSTREAM_SERVER_HOST` / `MSTREAM_SERVER_PORT`: bind address for the MCP HTTP server.
+- `MSTREAM_API_BASE_URL` / `MSTREAM_API_PORT`: address of the upstream mstream API.
+- `MSTREAM_API_TOKEN`: bearer token for API authentication.
+- `MSTREAM_API_TIMEOUT`, `MSTREAM_API_MAX_RETRIES`, `MSTREAM_API_BACKOFF_FACTOR`: HTTP client tuning.
+- `MSTREAM_LOG_LEVEL`: logging verbosity for the server and transport.
