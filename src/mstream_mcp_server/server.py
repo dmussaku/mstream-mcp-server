@@ -169,17 +169,27 @@ def _register_lifecycle_handlers(
     logger: logging.Logger,
     server_name: str,
 ) -> None:
-    server.app.state.mstream_client = client
+    app = _get_asgi_app(server)
+
+    if hasattr(app, "state"):
+        app.state.mstream_client = client  # type: ignore[attr-defined]
+
     name = server_name or getattr(server, "name", "mstream-mcp-server")
 
-    @server.app.on_event("startup")
     async def _on_startup() -> None:
         logger.info("Starting %s with API base %s", name, client.base_url)
 
-    @server.app.on_event("shutdown")
     async def _on_shutdown() -> None:
         logger.info("Shutting down %s", name)
         await client.aclose()
+
+    if hasattr(app, "add_event_handler"):
+        app.add_event_handler("startup", _on_startup)  # type: ignore[attr-defined]
+        app.add_event_handler("shutdown", _on_shutdown)  # type: ignore[attr-defined]
+    else:  # pragma: no cover - defensive fallback for future transports
+        logger.warning(
+            "ASGI app does not support event handlers; lifecycle hooks not registered"
+        )
 
 
 def _build_client(config: ServerConfig) -> AsyncMStreamClient:
@@ -312,4 +322,21 @@ def _error_response(
     return payload
 
 
-__all__ = ["ServerConfig", "TransportAdapter", "create_mcp_server", "setup_logging"]
+def _get_asgi_app(server: FastMCP) -> Any:
+    """Extract the underlying ASGI app for the FastMCP instance."""
+    for attr in ("app", "asgi_app", "asgi"):
+        app = getattr(server, attr, None)
+        if app is not None:
+            return app
+    if callable(server):
+        return server
+    raise AttributeError("FastMCP instance does not expose an ASGI app")
+
+
+__all__ = [
+    "ServerConfig",
+    "TransportAdapter",
+    "create_mcp_server",
+    "setup_logging",
+    "_get_asgi_app",
+]

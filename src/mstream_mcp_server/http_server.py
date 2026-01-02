@@ -8,7 +8,13 @@ import os
 import uvicorn
 from mcp.server.fastmcp import FastMCP
 
-from .server import ServerConfig, TransportAdapter, create_mcp_server, setup_logging
+from .server import (
+    ServerConfig,
+    TransportAdapter,
+    create_mcp_server,
+    setup_logging,
+    _get_asgi_app,
+)
 
 
 class HTTPTransportAdapter(TransportAdapter):
@@ -22,8 +28,9 @@ class HTTPTransportAdapter(TransportAdapter):
         self.logger = logger or logging.getLogger(__name__)
 
     async def serve(self, mcp_server: FastMCP) -> None:
+        asgi_app = _get_asgi_app(mcp_server)
         config = uvicorn.Config(
-            app=mcp_server.app,
+            app=asgi_app,
             host=self.host,
             port=self.port,
             log_config=None,
