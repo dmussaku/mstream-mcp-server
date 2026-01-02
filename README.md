@@ -7,6 +7,57 @@ An MCP server for https://github.com/makarski/mstream
 - Python 3.11 or later
 - Recommended: a virtual environment (``python -m venv .venv``)
 
+## Available Tools
+
+This MCP server provides the following tools for managing mstream jobs and services:
+
+### Job Management
+- **`list_jobs`** - List all configured mstream jobs with their current status, metadata, and configuration
+- **`create_job`** - Create a new mstream job with input/output schemas and batch configuration
+- **`stop_job`** - Stop a running mstream job by job ID
+- **`restart_job`** - Restart a stopped mstream job by job ID
+
+### Service Management  
+- **`list_services`** - List all registered mstream services
+- **`get_service`** - Get details of a specific service by service ID
+- **`create_service`** - Register a new service with mstream, including endpoint and schema definitions
+- **`delete_service`** - Remove a service from mstream by service ID
+
+### Usage Examples
+
+```bash
+# List all jobs
+list_jobs()
+
+# Create a new job with schema
+create_job({
+  "name": "data-processing-job",
+  "input_schema": {
+    "name": "input",
+    "fields": [
+      {"name": "data", "type": "string", "required": true}
+    ]
+  },
+  "batch_config": {
+    "batch_size": 100,
+    "max_concurrency": 5
+  }
+})
+
+# Stop a job
+stop_job("job-123")
+
+# Create a service
+create_service({
+  "name": "my-service",
+  "endpoint": "http://localhost:8080/process",
+  "schemas": [{
+    "name": "request",
+    "fields": [{"name": "input", "type": "string", "required": true}]
+  }]
+})
+```
+
 ## Setup
 
 1. Clone the repository and create/activate your virtual environment.
@@ -60,7 +111,7 @@ Add the following to your VS Code `settings.json` to connect to the mstream MCP 
   "mcp.servers": {
     "mstream": {
       "type": "http",
-      "url": "http://localhost:8788/mcp",
+      "url": "http://localhost:<PORT>/mcp",
       "transport": {
         "type": "http"
       }
