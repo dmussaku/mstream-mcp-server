@@ -5,7 +5,6 @@ from mstream_mcp_server.api.models import (
     ErrorResponse,
     Job,
     SchemaDefinition,
-    SchemaField,
     Service,
 )
 
@@ -135,9 +134,7 @@ def test_service_response_contract() -> None:
 
 
 def test_batch_config_round_trip() -> None:
-    config = BatchConfig.from_dict(
-        {"batch_size": 10, "max_concurrency": 3, "timeout_seconds": 2.5}
-    )
+    config = BatchConfig.from_dict({"batch_size": 10, "max_concurrency": 3, "timeout_seconds": 2.5})
     assert config.to_dict() == {
         "batch_size": 10,
         "max_concurrency": 3,

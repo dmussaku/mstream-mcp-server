@@ -22,9 +22,7 @@ class STDIOTransportAdapter(TransportAdapter):
         self.logger = logger or logging.getLogger(__name__)
 
     async def serve(self, mcp_server: FastMCP) -> None:  # pragma: no cover - stub
-        self.logger.warning(
-            "STDIO transport is not implemented yet. Use HTTP transport instead."
-        )
+        self.logger.warning("STDIO transport is not implemented yet. Use HTTP transport instead.")
         raise NotImplementedError("STDIO transport adapter has not been implemented.")
 
 

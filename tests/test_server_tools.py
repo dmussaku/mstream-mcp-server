@@ -48,15 +48,11 @@ def _mock_api_transport() -> tuple[httpx.MockTransport, dict[str, Any]]:
 
         if method == "POST" and path.endswith("/stop"):
             job_id = path.split("/")[-2]
-            return respond(
-                200, {"id": job_id, "status": "stopped", "name": f"{job_id}-name"}
-            )
+            return respond(200, {"id": job_id, "status": "stopped", "name": f"{job_id}-name"})
 
         if method == "POST" and path.endswith("/restart"):
             job_id = path.split("/")[-2]
-            return respond(
-                200, {"id": job_id, "status": "running", "name": f"{job_id}-name"}
-            )
+            return respond(200, {"id": job_id, "status": "running", "name": f"{job_id}-name"})
 
         if method == "GET" and path == "/services":
             return respond(200, {"services": state["services"]})
@@ -72,18 +68,14 @@ def _mock_api_transport() -> tuple[httpx.MockTransport, dict[str, Any]]:
 
         if method == "GET" and path.startswith("/services/"):
             service_id = path.split("/")[-1]
-            service = next(
-                (svc for svc in state["services"] if svc["id"] == service_id), None
-            )
+            service = next((svc for svc in state["services"] if svc["id"] == service_id), None)
             if not service:
                 return respond(404, {"message": "not found"})
             return respond(200, service)
 
         if method == "DELETE" and path.startswith("/services/"):
             service_id = path.split("/")[-1]
-            state["services"] = [
-                svc for svc in state["services"] if svc["id"] != service_id
-            ]
+            state["services"] = [svc for svc in state["services"] if svc["id"] != service_id]
             return respond(200, {})
 
         return respond(404, {"message": "not found"})
@@ -112,7 +104,7 @@ def _unwrap(response: Any) -> dict[str, Any]:
 
 @pytest.mark.anyio
 async def test_list_jobs_tool_end_to_end(
-    mcp_server_with_state: tuple[Any, dict[str, Any]]
+    mcp_server_with_state: tuple[Any, dict[str, Any]],
 ) -> None:
     server, _ = mcp_server_with_state
     raw_response = await server.call_tool("list_jobs", {})
@@ -125,7 +117,7 @@ async def test_list_jobs_tool_end_to_end(
 
 @pytest.mark.anyio
 async def test_create_job_tool_end_to_end(
-    mcp_server_with_state: tuple[Any, dict[str, Any]]
+    mcp_server_with_state: tuple[Any, dict[str, Any]],
 ) -> None:
     server, state = mcp_server_with_state
     payload = {
@@ -146,7 +138,7 @@ async def test_create_job_tool_end_to_end(
 
 @pytest.mark.anyio
 async def test_service_tools_flow(
-    mcp_server_with_state: tuple[Any, dict[str, Any]]
+    mcp_server_with_state: tuple[Any, dict[str, Any]],
 ) -> None:
     server, state = mcp_server_with_state
     create_raw = await server.call_tool(
@@ -158,9 +150,7 @@ async def test_service_tools_flow(
                 "schemas": [
                     {
                         "name": "input",
-                        "fields": [
-                            {"name": "doc", "type": "string", "required": True}
-                        ],
+                        "fields": [{"name": "doc", "type": "string", "required": True}],
                     }
                 ],
             }
@@ -174,27 +164,21 @@ async def test_service_tools_flow(
     assert list_response["success"] is True
     assert any(svc["id"] == service_id for svc in list_response["data"]["services"])
 
-    get_response = _unwrap(
-        await server.call_tool("get_service", {"service_id": service_id})
-    )
+    get_response = _unwrap(await server.call_tool("get_service", {"service_id": service_id}))
     assert get_response["success"] is True
     assert get_response["data"]["service"]["id"] == service_id
 
-    delete_response = _unwrap(
-        await server.call_tool("delete_service", {"service_id": service_id})
-    )
+    delete_response = _unwrap(await server.call_tool("delete_service", {"service_id": service_id}))
     assert delete_response["success"] is True
     assert all(svc["id"] != service_id for svc in state["services"])
 
 
 @pytest.mark.anyio
 async def test_create_job_validation_error(
-    mcp_server_with_state: tuple[Any, dict[str, Any]]
+    mcp_server_with_state: tuple[Any, dict[str, Any]],
 ) -> None:
     server, _ = mcp_server_with_state
-    response = _unwrap(
-        await server.call_tool("create_job", {"payload": {"input_schema": {}}})
-    )
+    response = _unwrap(await server.call_tool("create_job", {"payload": {"input_schema": {}}}))
 
     assert response["success"] is False
     assert "name is required" in response["error"]

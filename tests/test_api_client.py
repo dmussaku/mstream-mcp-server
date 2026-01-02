@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pytest
 import httpx
+import pytest
 
 from mstream_mcp_server.api.client import APIError, AsyncMStreamClient
 from mstream_mcp_server.api.models import (
@@ -19,13 +19,9 @@ def _sample_schema() -> SchemaDefinition:
     )
 
 
-def _make_client(
-    handler: httpx.MockTransport | None = None, **kwargs: object
-) -> AsyncMStreamClient:
+def _make_client(handler: httpx.MockTransport | None = None, **kwargs: object) -> AsyncMStreamClient:
     transport = handler if isinstance(handler, httpx.MockTransport) else None
-    return AsyncMStreamClient(
-        base_url="http://example.com", transport=transport, **kwargs
-    )
+    return AsyncMStreamClient(base_url="http://example.com", transport=transport, **kwargs)
 
 
 @pytest.mark.anyio
@@ -56,9 +52,7 @@ async def test_retries_for_idempotent_methods() -> None:
             return httpx.Response(500, json={"message": "temporary"})
         return httpx.Response(200, json={"jobs": []})
 
-    async with _make_client(
-        httpx.MockTransport(handler), max_retries=1, backoff_factor=0
-    ) as client:
+    async with _make_client(httpx.MockTransport(handler), max_retries=1, backoff_factor=0) as client:
         jobs = await client.list_jobs()
 
     assert jobs == []
@@ -76,9 +70,7 @@ async def test_non_idempotent_requests_do_not_retry() -> None:
     request = JobCreateRequest(name="job", input_schema=_sample_schema())
 
     with pytest.raises(APIError) as excinfo:
-        async with _make_client(
-            httpx.MockTransport(handler), max_retries=3, backoff_factor=0
-        ) as client:
+        async with _make_client(httpx.MockTransport(handler), max_retries=3, backoff_factor=0) as client:
             await client.create_job(request)
 
     assert excinfo.value.status_code == 500
@@ -88,9 +80,7 @@ async def test_non_idempotent_requests_do_not_retry() -> None:
 @pytest.mark.anyio
 async def test_api_error_details_are_preserved() -> None:
     async def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(
-            400, json={"message": "invalid", "detail": "bad request"}
-        )
+        return httpx.Response(400, json={"message": "invalid", "detail": "bad request"})
 
     async with _make_client(httpx.MockTransport(handler)) as client:
         with pytest.raises(APIError) as excinfo:

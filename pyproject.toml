@@ -34,10 +34,10 @@ dev = [
 ]
 
 [tool.black]
-line-length = 88
+line-length = 120
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 src = ["src"]
 target-version = "py310"
 

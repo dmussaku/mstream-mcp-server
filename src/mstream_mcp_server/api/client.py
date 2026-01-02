@@ -122,11 +122,7 @@ class AsyncMStreamClient:
                 if response.is_success:
                     return response
 
-                if (
-                    method in IDEMPOTENT_METHODS
-                    and response.status_code >= 500
-                    and attempt < attempts - 1
-                ):
+                if method in IDEMPOTENT_METHODS and response.status_code >= 500 and attempt < attempts - 1:
                     await self._sleep(attempt)
                     continue
 
@@ -152,9 +148,7 @@ class AsyncMStreamClient:
             details = response.json()
             error = ErrorResponse.from_response(response.status_code, details)
             message = error.message or message
-            return APIError(
-                message, status_code=response.status_code, details=error.details
-            )
+            return APIError(message, status_code=response.status_code, details=error.details)
         except Exception:
             # Fall back to plain text body when JSON parsing fails.
             text_body = response.text

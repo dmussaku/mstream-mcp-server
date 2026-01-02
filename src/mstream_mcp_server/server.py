@@ -32,9 +32,7 @@ def setup_logging(level: str = "INFO") -> logging.Logger:
     return logging.getLogger("mstream_mcp_server")
 
 
-def create_mcp_server(
-    config: ServerConfig, *, logger: logging.Logger | None = None
-) -> FastMCP:
+def create_mcp_server(config: ServerConfig, *, logger: logging.Logger | None = None) -> FastMCP:
     """Build the MCP server with tools mapped to the mstream API client."""
 
     app_logger = logger or logging.getLogger("mstream_mcp_server")
@@ -61,9 +59,7 @@ def create_mcp_server(
             return _success_response({"job": _job_to_dict(job)})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("create_job failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     @mcp_server.tool()
     async def stop_job(job_id: str) -> dict[str, Any]:
@@ -74,9 +70,7 @@ def create_mcp_server(
             return _success_response({"job": _job_to_dict(job)})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("stop_job failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     @mcp_server.tool()
     async def restart_job(job_id: str) -> dict[str, Any]:
@@ -87,22 +81,16 @@ def create_mcp_server(
             return _success_response({"job": _job_to_dict(job)})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("restart_job failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     @mcp_server.tool()
     async def list_services() -> dict[str, Any]:
         try:
             services = await client.list_services()
-            return _success_response(
-                {"services": [_service_to_dict(service) for service in services]}
-            )
+            return _success_response({"services": [_service_to_dict(service) for service in services]})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("list_services failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     @mcp_server.tool()
     async def get_service(service_id: str) -> dict[str, Any]:
@@ -113,9 +101,7 @@ def create_mcp_server(
             return _success_response({"service": _service_to_dict(service)})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("get_service failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     @mcp_server.tool()
     async def create_service(payload: dict[str, Any]) -> dict[str, Any]:
@@ -129,9 +115,7 @@ def create_mcp_server(
             return _success_response({"service": _service_to_dict(service)})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("create_service failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     @mcp_server.tool()
     async def delete_service(service_id: str) -> dict[str, Any]:
@@ -139,14 +123,10 @@ def create_mcp_server(
             return _error_response("service_id is required.")
         try:
             await client.delete_service(service_id)
-            return _success_response(
-                {"service_id": service_id}, message="Service deleted."
-            )
+            return _success_response({"service_id": service_id}, message="Service deleted.")
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("delete_service failed: %s", exc)
-            return _error_response(
-                str(exc), status_code=exc.status_code, details=exc.details
-            )
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     _register_lifecycle_handlers(mcp_server, client, app_logger, config.server_name)
     return mcp_server
@@ -196,9 +176,7 @@ def _parse_job_create_request(payload: dict[str, Any]) -> JobCreateRequest:
         raise ValueError("name is required for create_job.")
 
     input_schema = _parse_schema_definition(payload.get("input_schema"), "input_schema")
-    output_schema = _parse_optional_schema(
-        payload.get("output_schema"), "output_schema"
-    )
+    output_schema = _parse_optional_schema(payload.get("output_schema"), "output_schema")
     batch_config = _parse_optional_batch(payload.get("batch_config"), "batch_config")
     metadata = _parse_metadata(payload.get("metadata"))
 
@@ -227,15 +205,10 @@ def _parse_service_create_request(payload: dict[str, Any]) -> ServiceCreateReque
     if schemas_payload is not None:
         if not isinstance(schemas_payload, list):
             raise ValueError("schemas must be a list of schema definitions.")
-        schemas = [
-            _parse_schema_definition(schema_payload, "schemas[]")
-            for schema_payload in schemas_payload
-        ]
+        schemas = [_parse_schema_definition(schema_payload, "schemas[]") for schema_payload in schemas_payload]
 
     metadata = _parse_metadata(payload.get("metadata"))
-    return ServiceCreateRequest(
-        name=str(name), endpoint=str(endpoint), schemas=schemas, metadata=metadata
-    )
+    return ServiceCreateRequest(name=str(name), endpoint=str(endpoint), schemas=schemas, metadata=metadata)
 
 
 def _parse_schema_definition(data: Any, field_name: str) -> SchemaDefinition:
@@ -286,18 +259,14 @@ def _service_to_dict(service: Service) -> dict[str, Any]:
     return service.to_dict()
 
 
-def _success_response(
-    data: dict[str, Any], message: str | None = None
-) -> dict[str, Any]:
+def _success_response(data: dict[str, Any], message: str | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {"success": True, "data": data}
     if message:
         payload["message"] = message
     return payload
 
 
-def _error_response(
-    message: str, *, status_code: int | None = None, details: Any | None = None
-) -> dict[str, Any]:
+def _error_response(message: str, *, status_code: int | None = None, details: Any | None = None) -> dict[str, Any]:
     payload: dict[str, Any] = {"success": False, "error": message}
     if status_code is not None:
         payload["status_code"] = status_code
