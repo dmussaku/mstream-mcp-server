@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncGenerator
 from typing import Any
 
 import httpx
@@ -84,7 +85,7 @@ def _mock_api_transport() -> tuple[httpx.MockTransport, dict[str, Any]]:
 
 
 @pytest.fixture
-async def mcp_server_with_state() -> tuple[Any, dict[str, Any]]:
+async def mcp_server_with_state() -> AsyncGenerator[tuple[Any, dict[str, Any]], None]:
     transport, state = _mock_api_transport()
     config = ServerConfig(api_base_url="http://mock.api", transport=transport)
     server = create_mcp_server(config)
@@ -99,7 +100,9 @@ async def mcp_server_with_state() -> tuple[Any, dict[str, Any]]:
 def _unwrap(response: Any) -> dict[str, Any]:
     if isinstance(response, tuple) and len(response) == 2 and isinstance(response[1], dict):
         return response[1]
-    return response
+    if isinstance(response, dict):
+        return response
+    return {}
 
 
 @pytest.mark.anyio

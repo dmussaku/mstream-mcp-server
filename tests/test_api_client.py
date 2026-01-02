@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import httpx
 import pytest
 
@@ -19,7 +21,7 @@ def _sample_schema() -> SchemaDefinition:
     )
 
 
-def _make_client(handler: httpx.MockTransport | None = None, **kwargs: object) -> AsyncMStreamClient:
+def _make_client(handler: httpx.MockTransport | None = None, **kwargs: Any) -> AsyncMStreamClient:
     transport = handler if isinstance(handler, httpx.MockTransport) else None
     return AsyncMStreamClient(base_url="http://example.com", transport=transport, **kwargs)
 
