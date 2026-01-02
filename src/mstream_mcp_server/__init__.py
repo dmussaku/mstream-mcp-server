@@ -12,6 +12,7 @@ from .api import (
     Service,
     ServiceCreateRequest,
 )
+from .server import ServerConfig, TransportAdapter, create_mcp_server, setup_logging
 
 __all__ = [
     "APIError",
@@ -24,4 +25,8 @@ __all__ = [
     "SchemaField",
     "Service",
     "ServiceCreateRequest",
+    "ServerConfig",
+    "TransportAdapter",
+    "create_mcp_server",
+    "setup_logging",
 ]

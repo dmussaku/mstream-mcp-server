@@ -20,6 +20,7 @@ classifiers = [
 dependencies = [
   "mcp",
   "httpx>=0.27",
+  "uvicorn>=0.30",
 ]
 
 [project.optional-dependencies]
