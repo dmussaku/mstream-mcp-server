@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from httpx import BaseTransport
+
 
 @dataclass
 class ServerConfig:
@@ -17,6 +19,7 @@ class ServerConfig:
     api_max_retries: int = 3
     api_backoff_factor: float = 0.5
     server_name: str = "mstream-mcp-server"
+    transport: BaseTransport | None = None
 
     @classmethod
     def from_env(cls) -> ServerConfig:

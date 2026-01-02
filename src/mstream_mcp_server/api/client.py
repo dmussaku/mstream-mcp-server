@@ -5,6 +5,7 @@ from collections.abc import Mapping, MutableMapping
 from typing import Any
 
 import httpx
+from httpx import BaseTransport
 
 from .models import (
     BatchConfig,
@@ -47,6 +48,7 @@ class AsyncMStreamClient:
         timeout: float | httpx.Timeout | None = 10.0,
         max_retries: int = 3,
         backoff_factor: float = 0.5,
+        transport: BaseTransport | None = None,
     ) -> None:
         base = base_url.rstrip("/")
         self.base_url = f"{base}:{port}" if port is not None else base
@@ -60,7 +62,10 @@ class AsyncMStreamClient:
             default_headers.update(headers)
 
         self._client = httpx.AsyncClient(
-            base_url=self.base_url, headers=default_headers, timeout=timeout
+            base_url=self.base_url,
+            headers=default_headers,
+            timeout=timeout,
+            transport=transport,
         )
 
     async def __aenter__(self) -> AsyncMStreamClient:
