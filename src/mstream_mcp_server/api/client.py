@@ -8,13 +8,9 @@ import httpx
 from httpx import AsyncBaseTransport
 
 from .models import (
-    BatchConfig,
     ErrorResponse,
     Job,
-    JobCreateRequest,
-    SchemaDefinition,
     Service,
-    ServiceCreateRequest,
 )
 
 IDEMPOTENT_METHODS = {"GET", "DELETE"}
@@ -83,34 +79,15 @@ class AsyncMStreamClient:
         job_items = self._extract_list(payload, "jobs")
         return [Job.from_dict(item) for item in job_items]
 
-    async def create_job(self, job_request: JobCreateRequest) -> Job:
-        response = await self._request("POST", "/jobs", json=job_request.to_dict())
-        return Job.from_dict(response.json())
-
-    async def stop_job(self, job_id: str) -> Job:
-        response = await self._request("POST", f"/jobs/{job_id}/stop")
-        return Job.from_dict(response.json())
-
-    async def restart_job(self, job_id: str) -> Job:
-        response = await self._request("POST", f"/jobs/{job_id}/restart")
-        return Job.from_dict(response.json())
-
     async def list_services(self) -> list[Service]:
         response = await self._request("GET", "/services")
         payload = response.json()
         service_items = self._extract_list(payload, "services")
         return [Service.from_dict(item) for item in service_items]
 
-    async def create_service(self, request: ServiceCreateRequest) -> Service:
-        response = await self._request("POST", "/services", json=request.to_dict())
-        return Service.from_dict(response.json())
-
     async def get_service(self, service_id: str) -> Service:
         response = await self._request("GET", f"/services/{service_id}")
         return Service.from_dict(response.json())
-
-    async def delete_service(self, service_id: str) -> None:
-        await self._request("DELETE", f"/services/{service_id}")
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         attempts = self.max_retries + 1 if method in IDEMPOTENT_METHODS else 1
@@ -182,11 +159,7 @@ class AsyncMStreamClient:
 __all__ = [
     "APIError",
     "AsyncMStreamClient",
-    "BatchConfig",
     "ErrorResponse",
     "Job",
-    "JobCreateRequest",
-    "SchemaDefinition",
     "Service",
-    "ServiceCreateRequest",
 ]
