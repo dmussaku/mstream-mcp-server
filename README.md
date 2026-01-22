@@ -16,6 +16,7 @@ This MCP server provides the following tools for managing mstream jobs and servi
 - **`create_job`** - Create a new mstream job with input/output schemas and batch configuration
 - **`stop_job`** - Stop a running mstream job by job ID
 - **`restart_job`** - Restart a stopped mstream job by job ID
+- **`list_job_checkpoints`** - Retrieve checkpoint records for a specific job to monitor progress and resumption points
 
 ### Service Management  
 - **`list_services`** - List all registered mstream services
@@ -46,6 +47,9 @@ create_job({
 
 # Stop a job
 stop_job("job-123")
+
+# Get checkpoint information for a job
+list_job_checkpoints("data-processing-job")
 
 # Create a service
 create_service({

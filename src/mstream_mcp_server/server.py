@@ -38,12 +38,19 @@ def create_mcp_server(config: ServerConfig, *, logger: logging.Logger | None = N
     # Expose the underlying client for lifecycle management and testing.
     mcp_server._mstream_client = client  # type: ignore[attr-defined]
 
-    @mcp_server.tool()
+    @mcp_server.tool(
+        description="Retrieve all services currently managed by the mstream system, including both running and stopped jobs. "
+        "Returns job metadata including name, status, timestamps, linked services, and pipeline configuration."
+    )
     async def list_jobs() -> dict[str, Any]:
         jobs = await client.list_jobs()
         return _success_response({"jobs": [_job_to_dict(job) for job in jobs]})
 
-    @mcp_server.tool()
+    @mcp_server.tool(
+        description="Retrieve all service configurations registered with the mstream system. "
+        "Returns service details including provider type (MongoDB, Kafka, PubSub, HTTP, UDF), "
+        "connection information (masked for security), and which jobs are using each service. "
+    )
     async def list_services() -> dict[str, Any]:
         try:
             services = await client.list_services()
@@ -52,7 +59,12 @@ def create_mcp_server(config: ServerConfig, *, logger: logging.Logger | None = N
             app_logger.error("list_services failed: %s", exc)
             return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
-    @mcp_server.tool()
+    @mcp_server.tool(
+        description="Retrieve detailed information for a specific service by name. "
+        "Returns service configuration including provider type, connection details (masked for security), "
+        "list of jobs that depend on this service, and whether it's a system service. "
+        "Supports MongoDB, Kafka, PubSub, HTTP, and UDF service types."
+    )
     async def get_service(service_id: str) -> dict[str, Any]:
         if not _is_non_empty_string(service_id):
             return _error_response("service_id is required.")
@@ -61,6 +73,23 @@ def create_mcp_server(config: ServerConfig, *, logger: logging.Logger | None = N
             return _success_response({"service": _service_to_dict(service)})
         except APIError as exc:  # pragma: no cover - runtime path
             app_logger.error("get_service failed: %s", exc)
+            return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
+
+    @mcp_server.tool(
+        description="Retrieve all checkpoint records for a specific job by name. "
+        "Checkpoints track job progress and enable resumption from the last processed position. "
+        "Returns cursor information for different source types (Kafka: topic/partition/offset, "
+        "MongoDB: resume token, etc.) and timestamps showing when each checkpoint was last updated. "
+        "Essential for monitoring data pipeline progress and ensuring reliable data processing."
+    )
+    async def list_job_checkpoints(job_name: str) -> dict[str, Any]:
+        if not _is_non_empty_string(job_name):
+            return _error_response("job_name is required.")
+        try:
+            checkpoints = await client.list_job_checkpoints(job_name)
+            return _success_response({"checkpoints": [checkpoint.to_dict() for checkpoint in checkpoints]})
+        except APIError as exc:  # pragma: no cover - runtime path
+            app_logger.error("list_job_checkpoints failed: %s", exc)
             return _error_response(str(exc), status_code=exc.status_code, details=exc.details)
 
     _register_lifecycle_handlers(mcp_server, client, app_logger, config.server_name)

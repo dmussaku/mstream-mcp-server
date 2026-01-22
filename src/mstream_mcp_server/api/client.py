@@ -11,6 +11,7 @@ from .models import (
     ErrorResponse,
     Job,
     Service,
+    Checkpoint,
 )
 
 IDEMPOTENT_METHODS = {"GET", "DELETE"}
@@ -88,6 +89,16 @@ class AsyncMStreamClient:
     async def get_service(self, service_id: str) -> Service:
         response = await self._request("GET", f"/services/{service_id}")
         return Service.from_dict(response.json())
+
+    async def list_job_checkpoints(self, job_name: str) -> list[Checkpoint]:
+        response = await self._request("GET", f"/jobs/{job_name}/checkpoints")
+        payload = response.json()
+        # The endpoint returns a direct array, not a wrapper object
+        if isinstance(payload, list):
+            checkpoint_items = [item for item in payload if isinstance(item, dict)]
+        else:
+            raise APIError("Unexpected response format for checkpoints endpoint")
+        return [Checkpoint.from_dict(item) for item in checkpoint_items]
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         attempts = self.max_retries + 1 if method in IDEMPOTENT_METHODS else 1

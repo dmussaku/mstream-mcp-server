@@ -1,7 +1,73 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Union
+
+
+@dataclass
+class KafkaCursor:
+    """Kafka-specific cursor information."""
+    topic: str
+    partition: int
+    offset: int
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> KafkaCursor:
+        return cls(
+            topic=data["topic"],
+            partition=data["partition"], 
+            offset=data["offset"]
+        )
+    
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source": "kafka",
+            "topic": self.topic,
+            "partition": self.partition,
+            "offset": self.offset
+        }
+
+
+@dataclass
+class MongoDBCursor:
+    """MongoDB-specific cursor information."""
+    data: dict[str, Any]
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> MongoDBCursor:
+        return cls(data=data.get("data", {}))
+    
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source": "mongodb",
+            "data": self.data
+        }
+
+
+@dataclass
+class UnknownCursor:
+    """Unknown cursor type with raw byte information."""
+    raw_bytes: int
+    raw_data: dict[str, Any] = field(default_factory=dict)
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> UnknownCursor:
+        return cls(
+            raw_bytes=data.get("raw_bytes", 0),
+            raw_data={k: v for k, v in data.items() if k not in {"source", "raw_bytes"}}
+        )
+    
+    def to_dict(self) -> dict[str, Any]:
+        result = {
+            "source": "unknown",
+            "raw_bytes": self.raw_bytes
+        }
+        result.update(self.raw_data)
+        return result
+
+
+# Type alias for all possible cursor types
+CursorType = Union[KafkaCursor, MongoDBCursor, UnknownCursor]
 
 
 @dataclass
@@ -260,3 +326,99 @@ class ErrorResponse:
                 details=data,
             )
         return cls(status_code=status_code, message=str(data))
+
+
+@dataclass
+class CursorInfo:
+    """Wrapper for cursor information that handles different source types.
+    
+    This matches the Rust API's tagged union structure and provides type-safe
+    access to cursor data based on the source type.
+    """
+    
+    cursor: CursorType
+    
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CursorInfo:
+        """Create CursorInfo from API response dictionary."""
+        if not isinstance(data, dict):
+            return cls(cursor=UnknownCursor(raw_bytes=0, raw_data={"error": "invalid_data"}))
+        
+        # Handle tagged union format from Rust API
+        source = data.get("source", "unknown").lower()
+        
+        try:
+            if source == "kafka":
+                return cls(cursor=KafkaCursor.from_dict(data))
+            elif source == "mongodb":
+                return cls(cursor=MongoDBCursor.from_dict(data))
+            else:  # unknown or any other type
+                return cls(cursor=UnknownCursor.from_dict(data))
+        except (KeyError, TypeError, ValueError) as e:
+            # Fallback to unknown cursor if parsing fails
+            return cls(cursor=UnknownCursor(
+                raw_bytes=len(str(data).encode()),
+                raw_data={"parse_error": str(e), "original_data": data}
+            ))
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary matching Rust API format."""
+        return self.cursor.to_dict()
+    
+    @property
+    def is_kafka(self) -> bool:
+        """Check if this is a Kafka cursor."""
+        return isinstance(self.cursor, KafkaCursor)
+    
+    @property
+    def is_mongodb(self) -> bool:
+        """Check if this is a MongoDB cursor."""
+        return isinstance(self.cursor, MongoDBCursor)
+    
+    @property
+    def is_unknown(self) -> bool:
+        """Check if this is an unknown cursor type."""
+        return isinstance(self.cursor, UnknownCursor)
+    
+    def as_kafka(self) -> KafkaCursor | None:
+        """Get as Kafka cursor if applicable."""
+        return self.cursor if isinstance(self.cursor, KafkaCursor) else None
+    
+    def as_mongodb(self) -> MongoDBCursor | None:
+        """Get as MongoDB cursor if applicable."""
+        return self.cursor if isinstance(self.cursor, MongoDBCursor) else None
+    
+    def as_unknown(self) -> UnknownCursor | None:
+        """Get as unknown cursor if applicable."""
+        return self.cursor if isinstance(self.cursor, UnknownCursor) else None
+
+
+@dataclass
+class Checkpoint:
+    """Represents a checkpoint for job progress tracking."""
+
+    job_name: str
+    updated_at: str
+    cursor: CursorInfo
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Checkpoint:
+        cursor_data = data.get("cursor", {})
+        return cls(
+            job_name=data.get("job_name", ""),
+            updated_at=data.get("updated_at", ""),
+            cursor=CursorInfo.from_dict(cursor_data),
+            metadata={
+                key: value for key, value in data.items() 
+                if key not in {"job_name", "updated_at", "cursor"}
+            },
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "job_name": self.job_name,
+            "updated_at": self.updated_at,
+            "cursor": self.cursor.to_dict(),
+            **self.metadata,
+        }
